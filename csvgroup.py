@@ -62,6 +62,9 @@ while i < len(sys.argv):
     elif sys.argv[i] in {'-d', '--delimiter'}:
         delimiter = sys.argv[i+1]
         i += 2
+    elif sys.argv[i] in {'-t', '--tabs'}:
+        delimiter = '\t'
+        i += 1
     else:
         filename = sys.argv[i]
         i += 1
