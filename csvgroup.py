@@ -109,7 +109,7 @@ for row in reader:
             }
 
 
-output_header = tuple(header.get_label(column) for column in columns) + \
+output_header = tuple(header.get_label(column) for column in columns) + (count_column if count_column else 'COUNT',) + \
     tuple('MAX_'+header.get_label(column) for column in max_columns) + \
     tuple('MIN_'+header.get_label(column) for column in min_columns) + \
     tuple('SUM_'+header.get_label(column) for column in sum_columns)
@@ -117,7 +117,7 @@ writer.writerow(output_header)
 
 
 for pk in table.keys():
-    row = pk + \
+    row = pk + (table[pk]['count'],) + \
         tuple(table[pk]['max'][header.get_label(column)] for column in max_columns) + \
         tuple(table[pk]['min'][header.get_label(column)] for column in min_columns) + \
         tuple(table[pk]['sum'][header.get_label(column)] for column in sum_columns)
