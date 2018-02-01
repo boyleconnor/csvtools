@@ -102,7 +102,7 @@ for row in reader:
             }
         else:
             table[pk] = {
-                'max': {header.get_label(column): max(int(row[header.get_index(column)]), int(table[pk]['max'][header.get_label(column)])) for column in min_columns},
+                'max': {header.get_label(column): max(int(row[header.get_index(column)]), int(table[pk]['max'][header.get_label(column)])) for column in max_columns},
                 'min': {header.get_label(column): min(int(row[header.get_index(column)]), int(table[pk]['min'][header.get_label(column)])) for column in min_columns},
                 'sum': {header.get_label(column): int(row[header.get_index(column)]) + int(table[pk]['sum'][header.get_label(column)]) for column in sum_columns},
                 'count': table[pk]['count'] + 1
