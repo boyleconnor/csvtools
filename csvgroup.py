@@ -15,8 +15,10 @@ def clean_columns(column_string):
     return cleaned_columns
 
 
+# Defaults
 filename = None
 i = 1
+delimiter = ','
 count_column = ''
 sum_columns = []
 max_columns = []
@@ -57,6 +59,9 @@ while i < len(sys.argv):
     elif sys.argv[i] in {'-m', '--min'}:
         min_columns = clean_columns(sys.argv[i+1])
         i += 2
+    elif sys.argv[i] in {'-d', '--delimiter'}:
+        delimiter = sys.argv[i+1]
+        i += 2
     else:
         filename = sys.argv[i]
         i += 1
@@ -68,7 +73,7 @@ if filename:
     input_stream = open(filename, 'r')
 else:
     input_stream = sys.stdin
-reader = csv.reader(input_stream)
+reader = csv.reader(input_stream, delimiter=delimiter)
 writer = csv.writer(sys.stdout)
 
 
