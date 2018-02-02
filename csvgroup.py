@@ -23,6 +23,7 @@ count_column = ''
 sum_columns = []
 max_columns = []
 min_columns = []
+names = False
 
 
 class Header:
@@ -65,6 +66,9 @@ while i < len(sys.argv):
     elif sys.argv[i] in {'-t', '--tabs'}:
         delimiter = '\t'
         i += 1
+    elif sys.argv[i] in {'-n', '--names'}:
+        names = True
+        i += 1
     else:
         filename = sys.argv[i]
         i += 1
@@ -87,6 +91,11 @@ for row in reader:
 
     # Figure out column numbers from header
     if first_row:
+        # Just print names if "-n" or "--names"
+        if names:
+            for i in range(len(row)):
+                print('%s: %s' % (str(i+1).rjust(3), row[i]))
+            exit()
         header = Header(row)
         first_row = False
 
