@@ -8,7 +8,7 @@ def clean_columns(column_string):
     columns = column_string.split(',')
     cleaned_columns = []
     for column in columns:
-        if all([digit in string.digits for digit in column]):
+        if column.isdigit():
             cleaned_columns.append(int(column))
         else:
             cleaned_columns.append(column)
