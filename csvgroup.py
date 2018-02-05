@@ -130,4 +130,8 @@ for pk in table.keys():
         tuple(table[pk]['max'][header.get_label(column)] for column in max_columns) + \
         tuple(table[pk]['min'][header.get_label(column)] for column in min_columns) + \
         tuple(table[pk]['sum'][header.get_label(column)] for column in sum_columns)
-    writer.writerow(row)
+    try:
+        writer.writerow(row)
+    except BrokenPipeError:
+        sys.stderr.close()
+        break
