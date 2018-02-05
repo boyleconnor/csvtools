@@ -8,7 +8,11 @@ def clean_columns(column_string):
     columns = column_string.split(',')
     cleaned_columns = []
     for column in columns:
-        if column.isdigit():
+        bounds = column.split('-')
+        if len(bounds) == 2 and bounds[0].isdigit() and bounds[1].isdigit():
+            column_range = range(int(bounds[0]), int(bounds[1])+1)
+            cleaned_columns += list(column_range)
+        elif column.isdigit():
             cleaned_columns.append(int(column))
         else:
             cleaned_columns.append(column)
