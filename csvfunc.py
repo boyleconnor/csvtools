@@ -70,4 +70,8 @@ for row_tuple in reader:
     else:
         row = Row(header, row_tuple)
         value = eval(function)
-        writer.writerow(row_tuple+[value])
+        try:
+            writer.writerow(row_tuple+[value])
+        except BrokenPipeError:
+            sys.stderr.close()
+            break
