@@ -11,7 +11,8 @@ class Row:
         self.row_tuple = row_tuple
 
     def __getitem__(self, column):
-        column = int(column)
+        if column.isdigit():
+            column = int(column)
         return row_tuple[header.get_index(column)]
 
     def __getattr__(self, column):
