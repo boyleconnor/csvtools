@@ -42,8 +42,8 @@ while i < len(sys.argv):
     elif sys.argv[i] in {'-f', '--function'}:
         function = sys.argv[i+1]
         i += 2
-    elif sys.argv[i] in {'-i', '--import'}:
-        modules = sys.argv[i+1].split(',')
+    elif sys.argv[i] in {'-r', '--prep'}:
+        prep_commands = sys.argv[i+1]
         i += 2
     elif sys.argv[i] in {'-n', '--names'}:
         names = True
@@ -62,10 +62,8 @@ reader = csv.reader(input_stream, delimiter=delimiter)
 writer = csv.writer(sys.stdout, lineterminator='\n')
 
 
-# Import libraries
-if modules:
-    for module in modules:
-        vars()[module] = importlib.import_module(module)
+# Execute prep commands (import libraries, set up data structures, etc.)
+exec(prep_commands)
 
 
 # Feed to output
