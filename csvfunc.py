@@ -1,6 +1,7 @@
 #!/Library/Frameworks/Python.framework/Versions/3.4/bin/python3
 import sys
 import csv
+import importlib
 from header import Header
 
 
@@ -22,6 +23,7 @@ delimiter = ','
 label = ''
 filename = ''
 names = False
+modules = []
 
 
 # Extract arguments
@@ -39,6 +41,9 @@ while i < len(sys.argv):
     elif sys.argv[i] in {'-f', '--function'}:
         function = sys.argv[i+1]
         i += 2
+    elif sys.argv[i] in {'-i', '--import'}:
+        modules = sys.argv[i+1].split(',')
+        i += 2
     elif sys.argv[i] in {'-n', '--names'}:
         names = True
         i += 1
@@ -54,6 +59,12 @@ else:
     input_stream = sys.stdin
 reader = csv.reader(input_stream, delimiter=delimiter)
 writer = csv.writer(sys.stdout)
+
+
+# Import libraries
+if modules:
+    for module in modules:
+        vars()[module] = importlib.import_module(module)
 
 
 # Feed to output
