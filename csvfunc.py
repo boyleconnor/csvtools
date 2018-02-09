@@ -58,7 +58,7 @@ if filename:
 else:
     input_stream = sys.stdin
 reader = csv.reader(input_stream, delimiter=delimiter)
-writer = csv.writer(sys.stdout)
+writer = csv.writer(sys.stdout, lineterminator='\n')
 
 
 # Import libraries
