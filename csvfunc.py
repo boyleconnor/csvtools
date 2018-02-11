@@ -23,6 +23,7 @@ class Row:
 delimiter = ','
 label = ''
 filename = ''
+prep_commands = ''
 names = False
 modules = []
 
