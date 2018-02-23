@@ -5,6 +5,17 @@ import string
 from header import Header
 
 
+def to_number(num_string):
+    try:
+        number = int(num_string)
+    except ValueError:
+        try:
+            number = float(num_string)
+        except ValueError:
+            raise ValueError("Could not convert '%s' to int or float" % num_string)
+    return number
+
+
 def clean_columns(column_string):
     columns = column_string.split(',')
     cleaned_columns = []
@@ -92,16 +103,16 @@ for row in reader:
         pk = tuple(row[header.get_index(i)] for i in columns)
         if pk not in table.keys():
             table[pk] = {
-                'max': {header.get_label(column): int(row[header.get_index(column)]) for column in max_columns},
-                'min': {header.get_label(column): int(row[header.get_index(column)]) for column in min_columns},
-                'sum': {header.get_label(column): int(row[header.get_index(column)]) for column in sum_columns},
+                'max': {header.get_label(column): to_number(row[header.get_index(column)]) for column in max_columns},
+                'min': {header.get_label(column): to_number(row[header.get_index(column)]) for column in min_columns},
+                'sum': {header.get_label(column): to_number(row[header.get_index(column)]) for column in sum_columns},
                 'count': 1
             }
         else:
             table[pk] = {
-                'max': {header.get_label(column): max(int(row[header.get_index(column)]), int(table[pk]['max'][header.get_label(column)])) for column in max_columns},
-                'min': {header.get_label(column): min(int(row[header.get_index(column)]), int(table[pk]['min'][header.get_label(column)])) for column in min_columns},
-                'sum': {header.get_label(column): int(row[header.get_index(column)]) + int(table[pk]['sum'][header.get_label(column)]) for column in sum_columns},
+                'max': {header.get_label(column): max(to_number(row[header.get_index(column)]), table[pk]['max'][header.get_label(column)]) for column in max_columns},
+                'min': {header.get_label(column): min(to_number(row[header.get_index(column)]), table[pk]['min'][header.get_label(column)]) for column in min_columns},
+                'sum': {header.get_label(column): to_number(row[header.get_index(column)]) + table[pk]['sum'][header.get_label(column)] for column in sum_columns},
                 'count': table[pk]['count'] + 1
             }
 
