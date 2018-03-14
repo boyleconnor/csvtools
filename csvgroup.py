@@ -55,7 +55,7 @@ names = False
 @click.option('max_columns', '--max', '-M')
 @click.option('min_columns', '--min', '-m')
 @click.option('--delimiter', '-d', default=',')
-@click.option('--tabs', '-t', default=False)
+@click.option('--tabs', '-t', is_flag=True)
 @click.option('--names', '-n', is_flag=True)
 def csvgroup(filename, columns, count, sum_columns, max_columns, min_columns, delimiter, tabs, names):
     columns = clean_columns(columns)
@@ -69,7 +69,7 @@ def csvgroup(filename, columns, count, sum_columns, max_columns, min_columns, de
         input_stream = open(filename, 'r')
     else:
         input_stream = sys.stdin
-    reader = csv.reader(input_stream, delimiter=delimiter)
+    reader = csv.reader(input_stream, delimiter=delimiter if not tabs else '\t')
     writer = csv.writer(sys.stdout, lineterminator='\n')
 
 
