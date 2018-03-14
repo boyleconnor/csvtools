@@ -35,7 +35,7 @@ def clean_columns(column_string):
 filename = None
 i = 1
 delimiter = ','
-count_column = ''
+count_column = 'COUNT'
 sum_columns = []
 max_columns = []
 min_columns = []
@@ -117,7 +117,7 @@ for row in reader:
             }
 
 
-output_header = tuple(header.get_label(column) for column in columns) + (count_column if count_column else 'COUNT',) + \
+output_header = tuple(header.get_label(column) for column in columns) + (count_column,) + \
     tuple('MAX_'+header.get_label(column) for column in max_columns) + \
     tuple('MIN_'+header.get_label(column) for column in min_columns) + \
     tuple('SUM_'+header.get_label(column) for column in sum_columns)
