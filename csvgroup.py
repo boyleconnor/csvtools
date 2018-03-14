@@ -35,7 +35,7 @@ def clean_columns(column_string):
 
 
 @click.command()
-@click.argument('filename', type=click.Path(exists=True))
+@click.argument('input_stream', type=click.File('r'), default=sys.stdin)
 @click.option('--columns', '-c', type=str)
 @click.option('count_column', '--count', '-C', default='COUNT')
 @click.option('sum_columns', '--sum', '-s')
@@ -44,7 +44,7 @@ def clean_columns(column_string):
 @click.option('--delimiter', '-d', default=',')
 @click.option('--tabs', '-t', is_flag=True)
 @click.option('--names', '-n', is_flag=True)
-def csvgroup(filename, columns, count_column, sum_columns, max_columns, min_columns, delimiter, tabs, names):
+def csvgroup(input_stream, columns, count_column, sum_columns, max_columns, min_columns, delimiter, tabs, names):
     columns = clean_columns(columns)
     sum_columns = clean_columns(sum_columns)
     max_columns = clean_columns(max_columns)
@@ -52,10 +52,6 @@ def csvgroup(filename, columns, count_column, sum_columns, max_columns, min_colu
     group_columns = set(sum_columns+max_columns+min_columns)
 
     # Set up input and output streams
-    if filename:
-        input_stream = open(filename, 'r')
-    else:
-        input_stream = sys.stdin
     reader = csv.reader(input_stream, delimiter=delimiter if not tabs else '\t')
     writer = csv.writer(sys.stdout, lineterminator='\n')
 
