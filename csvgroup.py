@@ -34,30 +34,17 @@ def clean_columns(column_string):
     return cleaned_columns
 
 
-# Defaults
-filename = None
-i = 1
-delimiter = ','
-count_column = 'COUNT'
-sum_columns = []
-max_columns = []
-min_columns = []
-names = False
-
-
-
-
 @click.command()
 @click.argument('filename', type=click.Path(exists=True))
 @click.option('--columns', '-c', type=str)
-@click.option('--count', '-C', default='COUNT')
+@click.option('count_column', '--count', '-C', default='COUNT')
 @click.option('sum_columns', '--sum', '-s')
 @click.option('max_columns', '--max', '-M')
 @click.option('min_columns', '--min', '-m')
 @click.option('--delimiter', '-d', default=',')
 @click.option('--tabs', '-t', is_flag=True)
 @click.option('--names', '-n', is_flag=True)
-def csvgroup(filename, columns, count, sum_columns, max_columns, min_columns, delimiter, tabs, names):
+def csvgroup(filename, columns, count_column, sum_columns, max_columns, min_columns, delimiter, tabs, names):
     columns = clean_columns(columns)
     sum_columns = clean_columns(sum_columns)
     max_columns = clean_columns(max_columns)
