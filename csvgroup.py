@@ -2,6 +2,7 @@
 import csv
 import sys
 import string
+import click
 from header import Header
 
 
@@ -17,6 +18,8 @@ def to_number(num_string):
 
 
 def clean_columns(column_string):
+    if not column_string:
+        return []
     columns = column_string.split(',')
     cleaned_columns = []
     for column in columns:
@@ -42,95 +45,86 @@ min_columns = []
 names = False
 
 
-# Extract arguments
-while i < len(sys.argv):
-    if sys.argv[i] in {'-c', '--columns'}:
-        columns = clean_columns(sys.argv[i+1])
-        i += 2
-    elif sys.argv[i] in {'-C', '--count'}:
-        count_column = sys.argv[i+1]
-        i += 2
-    elif sys.argv[i] in {'-s', '--sum'}:
-        sum_columns = clean_columns(sys.argv[i+1])
-        i += 2
-    elif sys.argv[i] in {'-M', '--max'}:
-        max_columns = clean_columns(sys.argv[i+1])
-        i += 2
-    elif sys.argv[i] in {'-m', '--min'}:
-        min_columns = clean_columns(sys.argv[i+1])
-        i += 2
-    elif sys.argv[i] in {'-d', '--delimiter'}:
-        delimiter = sys.argv[i+1]
-        i += 2
-    elif sys.argv[i] in {'-t', '--tabs'}:
-        delimiter = '\t'
-        i += 1
-    elif sys.argv[i] in {'-n', '--names'}:
-        names = True
-        i += 1
+
+
+@click.command()
+@click.argument('filename', type=click.Path(exists=True))
+@click.option('--columns', '-c', type=str)
+@click.option('--count', '-C', default='COUNT')
+@click.option('sum_columns', '--sum', '-s')
+@click.option('max_columns', '--max', '-M')
+@click.option('min_columns', '--min', '-m')
+@click.option('--delimiter', '-d', default=',')
+@click.option('--tabs', '-t', default=False)
+@click.option('--names', '-n', is_flag=True)
+def csvgroup(filename, columns, count, sum_columns, max_columns, min_columns, delimiter, tabs, names):
+    columns = clean_columns(columns)
+    sum_columns = clean_columns(sum_columns)
+    max_columns = clean_columns(max_columns)
+    min_columns = clean_columns(min_columns)
+    group_columns = set(sum_columns+max_columns+min_columns)
+
+    # Set up input and output streams
+    if filename:
+        input_stream = open(filename, 'r')
     else:
-        filename = sys.argv[i]
-        i += 1
-group_columns = set(sum_columns+max_columns+min_columns)
+        input_stream = sys.stdin
+    reader = csv.reader(input_stream, delimiter=delimiter)
+    writer = csv.writer(sys.stdout, lineterminator='\n')
 
 
-# Set up input and output streams
-if filename:
-    input_stream = open(filename, 'r')
-else:
-    input_stream = sys.stdin
-reader = csv.reader(input_stream, delimiter=delimiter)
-writer = csv.writer(sys.stdout, lineterminator='\n')
+    # Generate table from input
+    table = {}
+    first_row = True
+    for row in reader:
 
+        # Figure out column numbers from header
+        if first_row:
+            # Just print names if "-n" or "--names"
+            if names:
+                for i in range(len(row)):
+                    print('%s: %s' % (str(i+1).rjust(3), row[i]))
+                exit()
+            header = Header(row)
+            first_row = False
 
-# Generate table from input
-table = {}
-first_row = True
-for row in reader:
-
-    # Figure out column numbers from header
-    if first_row:
-        # Just print names if "-n" or "--names"
-        if names:
-            for i in range(len(row)):
-                print('%s: %s' % (str(i+1).rjust(3), row[i]))
-            exit()
-        header = Header(row)
-        first_row = False
-
-    # Generate table
-    else:
-        pk = tuple(row[header.get_index(i)] for i in columns)
-        if pk not in table.keys():
-            table[pk] = {
-                'max': {header.get_label(column): to_number(row[header.get_index(column)]) for column in max_columns},
-                'min': {header.get_label(column): to_number(row[header.get_index(column)]) for column in min_columns},
-                'sum': {header.get_label(column): to_number(row[header.get_index(column)]) for column in sum_columns},
-                'count': 1
-            }
+        # Generate table
         else:
-            table[pk] = {
-                'max': {header.get_label(column): max(to_number(row[header.get_index(column)]), table[pk]['max'][header.get_label(column)]) for column in max_columns},
-                'min': {header.get_label(column): min(to_number(row[header.get_index(column)]), table[pk]['min'][header.get_label(column)]) for column in min_columns},
-                'sum': {header.get_label(column): to_number(row[header.get_index(column)]) + table[pk]['sum'][header.get_label(column)] for column in sum_columns},
-                'count': table[pk]['count'] + 1
-            }
+            pk = tuple(row[header.get_index(i)] for i in columns)
+            if pk not in table.keys():
+                table[pk] = {
+                    'max': {header.get_label(column): to_number(row[header.get_index(column)]) for column in max_columns},
+                    'min': {header.get_label(column): to_number(row[header.get_index(column)]) for column in min_columns},
+                    'sum': {header.get_label(column): to_number(row[header.get_index(column)]) for column in sum_columns},
+                    'count': 1
+                }
+            else:
+                table[pk] = {
+                    'max': {header.get_label(column): max(to_number(row[header.get_index(column)]), table[pk]['max'][header.get_label(column)]) for column in max_columns},
+                    'min': {header.get_label(column): min(to_number(row[header.get_index(column)]), table[pk]['min'][header.get_label(column)]) for column in min_columns},
+                    'sum': {header.get_label(column): to_number(row[header.get_index(column)]) + table[pk]['sum'][header.get_label(column)] for column in sum_columns},
+                    'count': table[pk]['count'] + 1
+                }
 
 
-output_header = tuple(header.get_label(column) for column in columns) + (count_column,) + \
-    tuple('MAX_'+header.get_label(column) for column in max_columns) + \
-    tuple('MIN_'+header.get_label(column) for column in min_columns) + \
-    tuple('SUM_'+header.get_label(column) for column in sum_columns)
-writer.writerow(output_header)
+    output_header = tuple(header.get_label(column) for column in columns) + (count_column,) + \
+        tuple('MAX_'+header.get_label(column) for column in max_columns) + \
+        tuple('MIN_'+header.get_label(column) for column in min_columns) + \
+        tuple('SUM_'+header.get_label(column) for column in sum_columns)
+    writer.writerow(output_header)
 
 
-for pk in table.keys():
-    row = pk + (table[pk]['count'],) + \
-        tuple(table[pk]['max'][header.get_label(column)] for column in max_columns) + \
-        tuple(table[pk]['min'][header.get_label(column)] for column in min_columns) + \
-        tuple(table[pk]['sum'][header.get_label(column)] for column in sum_columns)
-    try:
-        writer.writerow(row)
-    except BrokenPipeError:
-        sys.stderr.close()
-        break
+    for pk in table.keys():
+        row = pk + (table[pk]['count'],) + \
+            tuple(table[pk]['max'][header.get_label(column)] for column in max_columns) + \
+            tuple(table[pk]['min'][header.get_label(column)] for column in min_columns) + \
+            tuple(table[pk]['sum'][header.get_label(column)] for column in sum_columns)
+        try:
+            writer.writerow(row)
+        except BrokenPipeError:
+            sys.stderr.close()
+            break
+
+
+if __name__ == '__main__':
+    csvgroup()
