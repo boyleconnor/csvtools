@@ -18,14 +18,6 @@ class Row:
         return self.row_tuple[self.header.get_index(column)]
 
 
-# Default args
-label = ''
-filename = ''
-prep_commands = ''
-names = False
-modules = []
-
-
 @click.command()
 @click.argument('input_stream', type=click.File('r'), default=sys.stdin)
 @click.option('--columns', '-c', type=str)
