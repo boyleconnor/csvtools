@@ -25,6 +25,11 @@ def clean_columns(column_string):
 
 
 class Group:
+    '''Class for object made to be easily accessible by user. A tuple
+    containing all values in a given column can be accessed like so:
+    group.<COLUMN_NAME>, group['<COLUMN_NAME>'] or group[<COLUMN_NUMER>], where
+    COLUMN_NUMBER is 1-indexed, and ignoring < and >.
+    '''
     def __init__(self, header, group_dict):
         self.header = header
         self.group_dict = group_dict
@@ -75,17 +80,17 @@ def csvgroup(input_stream, group_columns, output_columns, delimiter, tabs, names
             else:
                 [table[pk][column].append(row[header.get_index(column)]) for column in sum_columns]
 
+    # Output header
     output_header = tuple(header.get_label(column) for column in group_columns) + tuple(column[0] for column in output_columns)
     writer.writerow(output_header)
 
-
+    # Output each group (by pk)
     for pk in table.keys():
-        # TODO: Fix below
         group_cells = pk
         group = Group(header, table[pk])
         output_cells = tuple()
         for column_label, column_function in output_columns:
-            output_cells += (eval(column_function),)
+            output_cells += (eval(column_function),)  # Evaluate user function
         row = group_cells + output_cells
         try:
             writer.writerow(row)
