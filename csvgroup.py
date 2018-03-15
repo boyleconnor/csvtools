@@ -3,18 +3,8 @@ import csv
 import sys
 import string
 import click
+from column_functions import *
 from header import Header
-
-
-def to_number(num_string):
-    try:
-        number = int(num_string)
-    except ValueError:
-        try:
-            number = float(num_string)
-        except ValueError:
-            raise ValueError("Could not convert '%s' to int or float" % num_string)
-    return number
 
 
 def clean_columns(column_string):
@@ -34,27 +24,32 @@ def clean_columns(column_string):
     return cleaned_columns
 
 
+class Group:
+    def __init__(self, header, group_dict):
+        self.header = header
+        self.group_dict = group_dict
+
+    def __getitem__(self, column):
+        return tuple(self.group_dict[self.header.get_label(column)])
+
+    def __getattr__(self, column):
+        return tuple(self.group_dict[self.header.get_label(column)])
+
+
 @click.command()
 @click.argument('input_stream', type=click.File('r'), default=sys.stdin)
-@click.option('--columns', '-c', type=str)
-@click.option('count_column', '--count', '-C', default='COUNT')
-@click.option('sum_columns', '--sum', '-s')
-@click.option('max_columns', '--max', '-M')
-@click.option('min_columns', '--min', '-m')
+@click.option('group_columns', '--columns', '-c', type=str)
+@click.option('output_columns', '--output', '-o', default='', multiple=True)
 @click.option('--delimiter', '-d', default=',')
 @click.option('--tabs', '-t', is_flag=True)
 @click.option('--names', '-n', is_flag=True)
-def csvgroup(input_stream, columns, count_column, sum_columns, max_columns, min_columns, delimiter, tabs, names):
-    columns = clean_columns(columns)
-    sum_columns = clean_columns(sum_columns)
-    max_columns = clean_columns(max_columns)
-    min_columns = clean_columns(min_columns)
-    group_columns = set(sum_columns+max_columns+min_columns)
+def csvgroup(input_stream, group_columns, output_columns, delimiter, tabs, names):
+    group_columns = clean_columns(group_columns)
+    output_columns = [(column.split('=')[0], column.split('=', 1)[1]) for column in output_columns]
 
     # Set up input and output streams
     reader = csv.reader(input_stream, delimiter=delimiter if not tabs else '\t')
     writer = csv.writer(sys.stdout, lineterminator='\n')
-
 
     # Generate table from input
     table = {}
@@ -69,39 +64,29 @@ def csvgroup(input_stream, columns, count_column, sum_columns, max_columns, min_
                     print('%s: %s' % (str(i+1).rjust(3), row[i]))
                 exit()
             header = Header(row)
+            sum_columns = [column for column in row if column not in group_columns]
             first_row = False
 
         # Generate table
         else:
-            pk = tuple(row[header.get_index(i)] for i in columns)
+            pk = tuple(row[header.get_index(i)] for i in group_columns)
             if pk not in table.keys():
-                table[pk] = {
-                    'max': {header.get_label(column): to_number(row[header.get_index(column)]) for column in max_columns},
-                    'min': {header.get_label(column): to_number(row[header.get_index(column)]) for column in min_columns},
-                    'sum': {header.get_label(column): to_number(row[header.get_index(column)]) for column in sum_columns},
-                    'count': 1
-                }
+                table[pk] = {column: [row[header.get_index(column)]] for column in sum_columns}
             else:
-                table[pk] = {
-                    'max': {header.get_label(column): max(to_number(row[header.get_index(column)]), table[pk]['max'][header.get_label(column)]) for column in max_columns},
-                    'min': {header.get_label(column): min(to_number(row[header.get_index(column)]), table[pk]['min'][header.get_label(column)]) for column in min_columns},
-                    'sum': {header.get_label(column): to_number(row[header.get_index(column)]) + table[pk]['sum'][header.get_label(column)] for column in sum_columns},
-                    'count': table[pk]['count'] + 1
-                }
+                [table[pk][column].append(row[header.get_index(column)]) for column in sum_columns]
 
-
-    output_header = tuple(header.get_label(column) for column in columns) + (count_column,) + \
-        tuple('MAX_'+header.get_label(column) for column in max_columns) + \
-        tuple('MIN_'+header.get_label(column) for column in min_columns) + \
-        tuple('SUM_'+header.get_label(column) for column in sum_columns)
+    output_header = tuple(header.get_label(column) for column in group_columns) + tuple(column[0] for column in output_columns)
     writer.writerow(output_header)
 
 
     for pk in table.keys():
-        row = pk + (table[pk]['count'],) + \
-            tuple(table[pk]['max'][header.get_label(column)] for column in max_columns) + \
-            tuple(table[pk]['min'][header.get_label(column)] for column in min_columns) + \
-            tuple(table[pk]['sum'][header.get_label(column)] for column in sum_columns)
+        # TODO: Fix below
+        group_cells = pk
+        group = Group(header, table[pk])
+        output_cells = tuple()
+        for column_label, column_function in output_columns:
+            output_cells += (eval(column_function),)
+        row = group_cells + output_cells
         try:
             writer.writerow(row)
         except BrokenPipeError:
