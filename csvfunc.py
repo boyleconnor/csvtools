@@ -20,14 +20,13 @@ class Row:
 
 @click.command()
 @click.argument('input_stream', type=click.File('r'), default=sys.stdin)
-@click.option('--columns', '-c', type=str)
 @click.option('--delimiter', '-d', default=',')
 @click.option('--tabs', '-t', default=False)
 @click.option('--label', '-l', default='')
 @click.option('--function', '-f', default='')
 @click.option('prep_commands', '--prep', '-r', default='')
 @click.option('--names', '-n', is_flag=True)
-def csvfunc(input_stream, columns, delimiter, tabs, label, function, prep_commands, names):
+def csvfunc(input_stream, delimiter, tabs, label, function, prep_commands, names):
     reader = csv.reader(input_stream, delimiter=delimiter)
     writer = csv.writer(sys.stdout, lineterminator='\n')
 
