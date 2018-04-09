@@ -25,10 +25,11 @@ def clean_columns(column_string):
 
 
 class Group:
-    '''Class for object made to be easily accessible by user. A tuple
-    containing all values in a given column can be accessed like so:
-    group.<COLUMN_NAME>, group['<COLUMN_NAME>'] or group[<COLUMN_NUMER>], where
-    COLUMN_NUMBER is 1-indexed, and ignoring < and >.
+    '''Represents the contents of a given "group". A tuple containing all
+    values in a given column of the group (in original order) can be accessed
+    in any of the following ways: group.<COLUMN_NAME>, group['<COLUMN_NAME>']
+    or group[<COLUMN_NUMER>], where COLUMN_NUMBER is 1-indexed, and ignoring <
+    and >.
     '''
     def __init__(self, header, group_dict):
         self.header = header
@@ -42,13 +43,20 @@ class Group:
 
 
 @click.command()
-@click.argument('input_stream', type=click.File('r'), default=sys.stdin)
-@click.option('group_columns', '--columns', '-c', type=str)
-@click.option('output_columns', '--output', '-o', default='', multiple=True)
-@click.option('--delimiter', '-d', default=',')
-@click.option('--tabs', '-t', is_flag=True)
-@click.option('--names', '-n', is_flag=True)
+@click.option('group_columns', '--columns', '-c', type=str, help='List of'\
+        ' columns for new primary key.')
+@click.option('output_columns', '--output', '-o', default='', multiple=True,
+        help='New columns to output, e.g. COLUMN_LABEL=SOME_EXPRESSION.')
+@click.option('--delimiter', '-d', default=',', help='Delimiting character of'\
+        ' the input CSV file.')
+@click.option('--tabs', '-t', is_flag=True, help='Specify that the input CSV'\
+        ' file is delimited with tabs. Overrides "-d".')
+@click.option('--names', '-n', is_flag=True, help='If flagged, output column '\
+        'names and numbers, then exit.')
+@click.argument('input_stream', type=click.File('r'), default=sys.stdin, metavar='[FILE]')
 def csvgroup(input_stream, group_columns, output_columns, delimiter, tabs, names):
+    '''Group columns by user-defined primary key
+    '''
     group_columns = clean_columns(group_columns)
     output_columns = [(column.split('=')[0], column.split('=', 1)[1]) for column in output_columns]
 
