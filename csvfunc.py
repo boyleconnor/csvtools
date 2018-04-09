@@ -19,12 +19,18 @@ class Row:
 
 
 @click.command()
-@click.option('--delimiter', '-d', default=',')
-@click.option('--tabs', '-t', default=False)
-@click.option('--label', '-l', default='')
-@click.option('--function', '-f', default='')
-@click.option('prep_commands', '--prep', '-r', default='')
-@click.option('--names', '-n', is_flag=True)
+@click.option('--delimiter', '-d', default=',', help='Delimiting character of'\
+        ' the input CSV file.')
+@click.option('--tabs', '-t', is_flag=True, help='Specify that the input CSV'\
+        ' file is delimited with tabs. Overrides "-d".')
+@click.option('--label', '-l', default='', 'Label for new column')
+@click.option('--function', '-f', default='', help='Expression for value in'\
+        ' new column of given row.')
+@click.option('prep_commands', '--prep', '-r', default='', help='Commands to'\
+        ' be executed (e.g. import libraries, create data structures) before'\
+        ' processing rows.')
+@click.option('--names', '-n', is_flag=True, help='If flagged, output column '\
+        'names and numbers, then exit.')
 @click.argument('input_stream', type=click.File('r'), default=sys.stdin)
 def csvfunc(input_stream, delimiter, tabs, label, function, prep_commands, names):
     reader = csv.reader(input_stream, delimiter=delimiter)
