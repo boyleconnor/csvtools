@@ -33,6 +33,9 @@ class Row:
         'names and numbers, then exit.')
 @click.argument('input_stream', type=click.File('r'), default=sys.stdin)
 def csvfunc(input_stream, delimiter, tabs, label, function, prep_commands, names):
+    '''Append a new column whose values are user-defined in terms of other
+    values in the same row.
+    '''
     reader = csv.reader(input_stream, delimiter=delimiter)
     writer = csv.writer(sys.stdout, lineterminator='\n')
 
