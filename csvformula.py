@@ -23,7 +23,7 @@ class Row:
         ' the input CSV file.')
 @click.option('--tabs', '-t', is_flag=True, help='Specify that the input CSV'\
         ' file is delimited with tabs. Overrides "-d".')
-@click.option('--label', '-l', default='', 'Label for new column')
+@click.option('--label', '-l', default='', help='Label for new column')
 @click.option('--function', '-f', default='', help='Expression for value in'\
         ' new column of given row.')
 @click.option('prep_commands', '--prep', '-r', default='', help='Commands to'\
@@ -32,7 +32,7 @@ class Row:
 @click.option('--names', '-n', is_flag=True, help='If flagged, output column '\
         'names and numbers, then exit.')
 @click.argument('input_stream', type=click.File('r'), default=sys.stdin)
-def csvfunc(input_stream, delimiter, tabs, label, function, prep_commands, names):
+def csvformula(input_stream, delimiter, tabs, label, function, prep_commands, names):
     '''Append a new column whose values are user-defined in terms of other
     values in the same row.
     '''
@@ -66,4 +66,4 @@ def csvfunc(input_stream, delimiter, tabs, label, function, prep_commands, names
 
 
 if __name__ == '__main__':
-    csvfunc()
+    csvformula()
