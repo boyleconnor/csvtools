@@ -1,7 +1,6 @@
 #!/Library/Frameworks/Python.framework/Versions/3.4/bin/python3
 import sys
 import csv
-import importlib
 import click
 from header import Header
 
